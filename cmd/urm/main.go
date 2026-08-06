@@ -1,21 +1,25 @@
 package main
 
 import (
-	"log"
+	"log/slog"
+	"os"
 
 	"urm/internal/config"
+	"urm/internal/logger"
 	"urm/internal/server"
 )
 
-func startAllServices() {
-	cfg := config.Load()
-
-	srv := server.New(cfg.HTTP())
+func startAllServices(log *slog.Logger, cfg *config.Config) {
+	srv := server.New(cfg.HTTP(), log)
 	if err := srv.Start(); err != nil {
-		log.Fatal(err)
+		log.Error("failed to start http server", "err", err)
+		os.Exit(1)
 	}
 }
 
 func main() {
-	startAllServices()
+	cfg := config.Load()
+	log := logger.New(cfg.Env, cfg.LogLevel)
+
+	startAllServices(log, cfg)
 }
