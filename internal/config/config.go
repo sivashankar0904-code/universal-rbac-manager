@@ -3,6 +3,9 @@ package config
 import (
 	"os"
 
+	"github.com/joho/godotenv"
+
+	"urm/internal/repo"
 	"urm/internal/server"
 )
 
@@ -12,6 +15,8 @@ type Config struct {
 }
 
 func Load() *Config {
+	_ = godotenv.Load()
+
 	c := &Config{}
 	c.Env = c.getEnv("URM_ENV", "local")
 	c.LogLevel = c.getEnv("URM_LOG_LEVEL", "info")
@@ -27,7 +32,18 @@ func (c *Config) getEnv(key, fallback string) string {
 
 func (c *Config) HTTP() *server.Config {
 	return &server.Config{
-		Host: c.getEnv("URM_HTTP_HOST", "0.0.0.0"),
-		Port: c.getEnv("URM_HTTP_PORT", "8080"),
+		Host: c.getEnv("URM_HTTP_HOST", ""),
+		Port: c.getEnv("URM_HTTP_PORT", ""),
+	}
+}
+
+func (c *Config) Database() *repo.Config {
+	return &repo.Config{
+		Host:     c.getEnv("URM_DB_HOST", ""),
+		Port:     c.getEnv("URM_DB_PORT", ""),
+		User:     c.getEnv("URM_DB_USER", ""),
+		Password: c.getEnv("URM_DB_PASSWORD", ""),
+		Name:     c.getEnv("URM_DB_NAME", ""),
+		SSLMode:  c.getEnv("URM_DB_SSLMODE", "disable"),
 	}
 }
