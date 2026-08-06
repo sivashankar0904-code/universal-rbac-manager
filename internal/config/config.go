@@ -6,10 +6,16 @@ import (
 	"urm/internal/server"
 )
 
-type Config struct{}
+type Config struct {
+	Env      string
+	LogLevel string
+}
 
 func Load() *Config {
-	return &Config{}
+	c := &Config{}
+	c.Env = c.getEnv("URM_ENV", "local")
+	c.LogLevel = c.getEnv("URM_LOG_LEVEL", "info")
+	return c
 }
 
 func (c *Config) getEnv(key, fallback string) string {
