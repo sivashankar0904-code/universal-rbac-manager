@@ -1,0 +1,31 @@
+info:
+  name: Onboard Organisation
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseUrl}}/organisations/:id/onboard"
+  params:
+    - name: id
+      value: "{{organisationId}}"
+      type: path
+  headers:
+    - name: Accept
+      value: application/json
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.data.is_active
+      operator: eq
+      value: "true"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -6,9 +6,11 @@ import (
 	"os"
 
 	"urm/internal/config"
+	"urm/internal/helper"
 	"urm/internal/logger"
 	"urm/internal/repo"
 	"urm/internal/server"
+	"urm/internal/service"
 )
 
 func startAllServices(log *slog.Logger, cfg *config.Config) {
@@ -21,7 +23,17 @@ func startAllServices(log *slog.Logger, cfg *config.Config) {
 	}
 	defer pool.Close()
 
-	srv := server.New(cfg.HTTP(), log)
+	helperSvc := helper.NewService()
+	repoSvc := repo.NewService(pool, helperSvc)
+	serviceSvc := service.NewService(repoSvc, helperSvc)
+
+	handler := server.NewHandler(
+		log,
+		serviceSvc,
+	)
+	log.Info("services initialized")
+
+	srv := server.New(cfg.HTTP(), log, handler)
 	if err := srv.Start(); err != nil {
 		log.Error("failed to start http server", "err", err)
 		os.Exit(1)

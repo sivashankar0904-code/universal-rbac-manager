@@ -1,4 +1,6 @@
 name: local
 variables:
   - name: baseUrl
-    value: http://localhost:8080
+    value: http://localhost:8001
+  - name: organisationId
+    value: ""
