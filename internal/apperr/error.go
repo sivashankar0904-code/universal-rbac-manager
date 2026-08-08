@@ -79,11 +79,15 @@ func (e *Error) HTTPStatusCode() int {
 }
 
 func (e *Error) LogValue() slog.Value {
-	return slog.GroupValue(
+	attrs := []slog.Attr{
 		slog.String("kind", string(e.kind)),
 		slog.String("msg", e.message),
 		slog.String("at", e.fileLine),
-	)
+	}
+	if e.original != nil {
+		attrs = append(attrs, slog.String("cause", e.original.Error()))
+	}
+	return slog.GroupValue(attrs...)
 }
 
 func callerFileLine() string {

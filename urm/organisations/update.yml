@@ -1,0 +1,35 @@
+info:
+  name: Update Organisation
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/organisations/:id"
+  params:
+    - name: id
+      value: "{{organisationId}}"
+      type: path
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Acme Corp Renamed",
+        "description": "Updated description"
+      }
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

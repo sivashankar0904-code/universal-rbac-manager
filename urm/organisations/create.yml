@@ -1,0 +1,43 @@
+info:
+  name: Create Organisation
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/organisations"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "key": "acme-corp",
+        "name": "Acme Corp",
+        "description": "Test organisation",
+        "meta": { "industry": "software" }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        // Capture the new organisation's id for the other requests in this folder
+        if (res.body && res.body.data && res.body.data.id) {
+          bru.setVar("organisationId", res.body.data.id);
+        }
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+    - expression: res.body.data.status
+      operator: eq
+      value: pending
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -3,6 +3,7 @@ module urm
 go 1.26.4
 
 require (
+	github.com/fatih/structs v1.1.0
 	github.com/gin-gonic/gin v1.12.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/joho/godotenv v1.5.1

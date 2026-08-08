@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS Address (
+    id              TEXT uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    organizationID  TEXT,
+    userID          TEXT,
+    building        TEXT,
+    street          TEXT,
+    road            TEXT,
+    line1           TEXT,
+    line2           TEXT,
+    postalCode      TEXT,
+    city            TEXT,
+    stateName       TEXT,
+    country         TEXT,
+    addressType     TEXT,
+verification        TEXT,
+    location        jsonb,
+    is_active       boolean NOT NULL DEFAULT true,
+    status          jsonb,
+    searchTags      TEXT[],
+    createdAt       timestamptz DEFAULT now(),
+    updatedAt       timestamptz DEFAULT now()
+);
