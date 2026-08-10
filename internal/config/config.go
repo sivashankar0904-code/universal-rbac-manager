@@ -5,6 +5,7 @@ import (
 
 	"github.com/joho/godotenv"
 
+	"urm/internal/apm"
 	"urm/internal/repo"
 	"urm/internal/server"
 )
@@ -45,5 +46,15 @@ func (c *Config) Database() *repo.Config {
 		Password: c.getEnv("URM_DB_PASSWORD", ""),
 		Name:     c.getEnv("URM_DB_NAME", ""),
 		SSLMode:  c.getEnv("URM_DB_SSLMODE", "disable"),
+	}
+}
+
+func (c *Config) APM() *apm.Config {
+	return &apm.Config{
+		Enabled:           c.getEnv("URM_OTEL_ENABLED", "false") == "true",
+		CollectorEndpoint: c.getEnv("URM_OTEL_COLLECTOR_ENDPOINT", "localhost:4317"),
+		ServiceName:       c.getEnv("URM_OTEL_SERVICE_NAME", "urm"),
+		ServiceVersion:    c.getEnv("URM_OTEL_SERVICE_VERSION", "dev"),
+		Environment:       c.Env,
 	}
 }

@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 
+	"urm/internal/apm"
 	"urm/internal/config"
 	"urm/internal/helper"
 	"urm/internal/logger"
@@ -13,8 +15,16 @@ import (
 	"urm/internal/service"
 )
 
-func startAllServices(log *slog.Logger, cfg *config.Config) {
+func startAllServices(log *slog.Logger, cfg *config.Config, otelCfg apm.Config) {
 	ctx := context.Background()
+
+	shutdown, err := apm.Init(ctx, otelCfg)
+	if err != nil {
+		// logger isn't built yet at this point, hence the bare stderr write
+		fmt.Fprintln(os.Stderr, "failed to init apm:", err)
+		os.Exit(1)
+	}
+	defer shutdown(ctx)
 
 	pool, err := repo.NewPool(ctx, *cfg.Database(), log)
 	if err != nil {
@@ -23,8 +33,11 @@ func startAllServices(log *slog.Logger, cfg *config.Config) {
 	}
 	defer pool.Close()
 
+	//helper service
 	helperSvc := helper.NewService()
+	//repo service contain all db operations
 	repoSvc := repo.NewService(pool, helperSvc)
+	//services is grouped service with different interconnected packages
 	serviceSvc := service.NewService(repoSvc, helperSvc)
 
 	handler := server.NewHandler(
@@ -33,7 +46,7 @@ func startAllServices(log *slog.Logger, cfg *config.Config) {
 	)
 	log.Info("services initialized")
 
-	srv := server.New(cfg.HTTP(), log, handler)
+	srv := server.New(cfg.HTTP(), log, handler, cfg.APM().ServiceName)
 	if err := srv.Start(); err != nil {
 		log.Error("failed to start http server", "err", err)
 		os.Exit(1)
@@ -42,7 +55,9 @@ func startAllServices(log *slog.Logger, cfg *config.Config) {
 
 func main() {
 	cfg := config.Load()
-	log := logger.New(cfg.Env, cfg.LogLevel)
+	otelCfg := *cfg.APM()
 
-	startAllServices(log, cfg)
+	log := logger.New(cfg.Env, cfg.LogLevel, otelCfg.ServiceName)
+
+	startAllServices(log, cfg, otelCfg)
 }
