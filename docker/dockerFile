@@ -1,0 +1,16 @@
+FROM golang:1.26-alpine AS deps
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+
+FROM deps AS build
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -trimpath \
+    -ldflags="-s -w" \
+    -o /out/urm ./cmd/urm
+
+FROM scratch
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build /out/urm /urm
+ENTRYPOINT ["/urm"]
