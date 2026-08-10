@@ -1,0 +1,12 @@
+services:
+  urm:
+    build:
+      context: .
+      dockerfile: docker/dockerFile
+    env_file:
+      - .env
+    environment:
+      URM_DB_HOST: host.docker.internal
+    ports:
+      - "${URM_HTTP_PORT}:${URM_HTTP_PORT}"
+    restart: unless-stopped
