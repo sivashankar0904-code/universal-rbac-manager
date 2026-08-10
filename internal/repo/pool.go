@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -58,7 +59,7 @@ func NewPool(ctx context.Context, cfg Config, logger *slog.Logger) (*pgxpool.Poo
 	if err != nil {
 		return nil, err
 	}
-
+	poolCfg.ConnConfig.Tracer = otelpgx.NewTracer()
 	poolCfg.MaxConns = orDefault(cfg.MaxConns, defaultMaxConns)
 	poolCfg.MaxConnLifetime = orDefault(cfg.MaxConnLifetime, defaultMaxConnLifetime)
 	poolCfg.MaxConnIdleTime = orDefault(cfg.MaxConnIdleTime, defaultMaxConnIdleTime)

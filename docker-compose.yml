@@ -7,6 +7,46 @@ services:
       - .env
     environment:
       URM_DB_HOST: host.docker.internal
+      URM_OTEL_COLLECTOR_ENDPOINT: otel-collector:4317
     ports:
       - "${URM_HTTP_PORT}:${URM_HTTP_PORT}"
+    depends_on:
+      - otel-collector
     restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.154.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./docker/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - tempo
+      - loki
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:2.10.5
+    command: ["-config.file=/etc/tempo-config.yaml"]
+    volumes:
+      - ./docker/tempo-config.yaml:/etc/tempo-config.yaml
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.7.2
+    command: ["-config.file=/etc/loki-config.yaml"]
+    volumes:
+      - ./docker/loki-config.yaml:/etc/loki-config.yaml
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+
+volumes:
+  tempo-data:
+  loki-data:

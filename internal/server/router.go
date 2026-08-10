@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 type Config struct {
@@ -21,7 +22,7 @@ type Server struct {
 	handler *Handler
 }
 
-func New(cfg *Config, log *slog.Logger, handler *Handler) *Server {
+func New(cfg *Config, log *slog.Logger, handler *Handler, otelServiceName string) *Server {
 	engine := gin.New()
 	// No reverse proxy in front of this yet — disable trusting any
 	// X-Forwarded-For header rather than defaulting to "trust everyone",
@@ -39,6 +40,7 @@ func New(cfg *Config, log *slog.Logger, handler *Handler) *Server {
 	}
 
 	engine.Use(s.requestLogger())
+	engine.Use(otelgin.Middleware(otelServiceName))
 	engine.Use(gin.CustomRecoveryWithWriter(nil, s.recovery()))
 
 	s.registerRoutes()
